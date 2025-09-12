@@ -77,11 +77,8 @@
     <script>
     document.addEventListener('DOMContentLoaded', function() {
         
-        // --- CONFIGURATION ---
-        // PASTE YOUR SHEETDB API URL HERE
         const SHEETDB_API_URL = 'https://sheetdb.io/api/v1/nzi4y82hdzs9v'; 
 
-        // --- UI ELEMENTS ---
         const form = document.getElementById('akg-entry-form');
         const monthFilter = document.getElementById('akg-filter-month');
         const yearFilter = document.getElementById('akg-filter-year');
@@ -89,7 +86,6 @@
         const msgDiv = document.getElementById('akg-form-msg');
         const loadingIndicator = document.getElementById('loading-indicator');
 
-        // --- UTILITY FUNCTIONS ---
         const formatEuro = (value) => '€' + parseFloat(value).toFixed(2);
         const showMsg = (message, isError = false) => {
             msgDiv.textContent = message;
@@ -97,7 +93,6 @@
             setTimeout(() => msgDiv.textContent = '', 4000);
         };
 
-        // --- DATA FETCHING & RENDERING ---
         async function fetchAndRenderEntries() {
             loadingIndicator.textContent = '(Loading...)';
             tableBody.innerHTML = '<tr><td colspan="8" style="text-align:center;">Fetching entries...</td></tr>';
@@ -154,14 +149,12 @@
                 });
             }
 
-            // Update totals
             document.getElementById('akg-total-grand').textContent = formatEuro(grandTotal);
             document.getElementById('akg-total-aadi').textContent = formatEuro(aadiTotal);
             document.getElementById('akg-total-krithika').textContent = formatEuro(krithikaTotal);
             document.getElementById('akg-total-common').textContent = formatEuro(commonTotal);
         }
 
-        // --- EVENT HANDLERS ---
         form.addEventListener('submit', async function(e) {
             e.preventDefault();
             const submitButton = form.querySelector('button[type="submit"]');
@@ -190,7 +183,7 @@
                 showMsg('Entry saved successfully!', false);
                 form.reset();
                 document.getElementById('akg-date').valueAsDate = new Date();
-                fetchAndRenderEntries(); // Refresh the table
+                fetchAndRenderEntries();
             } catch (error) {
                 showMsg('Error: Could not save entry.', true);
                 console.error(error);
@@ -215,7 +208,7 @@
                     if (!response.ok) throw new Error('Failed to delete entry.');
                     
                     showMsg('Entry deleted.', false);
-                    fetchAndRenderEntries(); // Refresh the table
+                    fetchAndRenderEntries();
                 } catch (error) {
                     showMsg('Error: Could not delete entry.', true);
                     console.error(error);
@@ -225,13 +218,10 @@
             }
         });
         
-        // Re-filter when the month or year changes
         monthFilter.addEventListener('change', fetchAndRenderEntries);
         yearFilter.addEventListener('change', fetchAndRenderEntries);
 
-        // --- INITIALIZATION ---
         function init() {
-            // Populate filter dropdowns
             const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
             monthFilter.innerHTML = '<option value="0">All Months</option>';
             months.forEach((month, index) => monthFilter.innerHTML += `<option value="${index + 1}">${month}</option>`);
@@ -246,11 +236,7 @@
             fetchAndRenderEntries();
         }
 
-        if (SHEETDB_API_URL === 'https://sheetdb.io/api/v1/nzi4y82hdzs9v') {
-            tableBody.innerHTML = '<tr><td colspan="8" style="text-align:center; color: red;">Error: Please paste your SheetDB API URL into the code.</td></tr>';
-        } else {
-            init();
-        }
+        init();
     });
     </script>
 </body>
