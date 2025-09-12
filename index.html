@@ -5,77 +5,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Aadi & Krithika - Grocery Tracker</title>
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            background-color: #f0f2f5;
-            color: #333;
-            margin: 0;
-            padding: 20px;
-        }
-        .akg-wrap {
-            max-width: 1100px;
-            margin: 28px auto;
-            background: #fff;
-            border-radius: 12px;
-            padding: 24px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-        }
-        .akg-header h2 {
-            margin: 0 0 6px 0;
-            font-size: 1.8rem;
-            color: #3d3d5c;
-            text-align: center;
-        }
+        /* CSS is identical to the previous version, so it is kept for styling */
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background-color: #f0f2f5; color: #333; margin: 0; padding: 20px; }
+        .akg-wrap { max-width: 1100px; margin: 28px auto; background: #fff; border-radius: 12px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+        .akg-header h2 { margin: 0 0 6px 0; font-size: 1.8rem; color: #3d3d5c; text-align: center; }
         .akg-header p { color: #666; text-align: center; margin-bottom: 20px; }
-        .akg-form-card, .akg-filter-card, .akg-table-card {
-            background: #fff;
-            border: 1px solid #eef;
-            border-radius: 10px;
-            padding: 20px;
-            margin: 16px 0;
-        }
-        .akg-row {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 12px;
-            flex-wrap: wrap;
-        }
-        .akg-row label { font-weight: 600; color: #444; min-width: 120px;}
-        .akg-row input, .akg-row select {
-            flex-grow: 1;
-            padding: 9px 12px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 0.95rem;
-            min-width: 180px;
-        }
+        .akg-form-card, .akg-filter-card, .akg-table-card { background: #fff; border: 1px solid #eef; border-radius: 10px; padding: 20px; margin: 16px 0; }
+        .akg-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
+        .akg-row label { font-weight: 600; color: #444; min-width: 120px; }
+        .akg-row input, .akg-row select { flex-grow: 1; padding: 9px 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 0.95rem; min-width: 180px; }
         .akg-shares { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
         .akg-shares > div { display: flex; flex-direction: column; }
         .akg-shares label { margin-bottom: 5px; }
         .akg-actions { margin-top: 20px; }
-        .akg-btn {
-            background: #f4f5ff;
-            border: 1px solid #e1e4ff;
-            padding: 10px 16px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
+        .akg-btn { background: #f4f5ff; border: 1px solid #e1e4ff; padding: 10px 16px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: transform 0.2s, box-shadow 0.2s; }
         .akg-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.08); }
         .akg-btn-primary { background: linear-gradient(90deg,#667eea,#764ba2); color: #fff; border: none; }
-        .akg-form-msg { margin-left: 15px; font-weight: 600; }
+        .akg-form-msg, .loading-indicator { margin-left: 15px; font-weight: 600; }
         .akg-table-wrap { overflow-x: auto; }
         .akg-table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
         .akg-table th, .akg-table td { text-align: left; padding: 12px 10px; border-bottom: 1px solid #f2f2f6; }
         .akg-table th { background: #f7f8ff; font-size: 1rem; }
         .akg-table tbody tr:hover { background: #fafbff; }
         .akg-totals-row td { font-weight: 700; background: #f9f9fb; font-size: 1.05rem; }
-        .akg-delete-btn {
-            background: #ff4d6d; color: #fff; border: none;
-            padding: 6px 10px; border-radius: 6px; cursor: pointer; font-size: 0.8rem;
-        }
+        .akg-delete-btn { background: #ff4d6d; color: #fff; border: none; padding: 6px 10px; border-radius: 6px; cursor: pointer; font-size: 0.8rem; }
     </style>
 </head>
 <body>
@@ -83,44 +36,20 @@
     <div id="akg-wrap" class="akg-wrap">
         <header class="akg-header">
             <h2>🛒 Aadi & Krithika — Grocery Tracker (€)</h2>
-            <p>Add grocery bills and track monthly totals. Data is saved in this browser.</p>
+            <p>Add grocery bills and track monthly totals. Data is saved online in a Google Sheet.</p>
         </header>
 
         <section class="akg-form-card">
             <h3>Add New Entry</h3>
             <form id="akg-entry-form">
-                <div class="akg-row">
-                    <label>Date</label>
-                    <input type="date" id="akg-date" required />
-                </div>
-                <div class="akg-row">
-                    <label>Supermarket</label>
-                    <input type="text" id="akg-supermarket" placeholder="e.g. Lidl, Tesco, Aldi" required />
-                </div>
-                <div class="akg-row">
-                    <label>Who paid</label>
-                    <select id="akg-paid-by">
-                        <option value="Aadi">Aadi</option>
-                        <option value="Krithika">Krithika</option>
-                    </select>
-                </div>
-                <div class="akg-row">
-                    <label>Total amount (€)</label>
-                    <input type="number" id="akg-total" step="0.01" min="0" placeholder="25.50" required />
-                </div>
+                <div class="akg-row"><label>Date</label><input type="date" id="akg-date" required /></div>
+                <div class="akg-row"><label>Supermarket</label><input type="text" id="akg-supermarket" placeholder="e.g. Lidl, Tesco, Aldi" required /></div>
+                <div class="akg-row"><label>Who paid</label><select id="akg-paid-by"><option value="Aadi">Aadi</option><option value="Krithika">Krithika</option></select></div>
+                <div class="akg-row"><label>Total amount (€)</label><input type="number" id="akg-total" step="0.01" min="0" placeholder="25.50" required /></div>
                 <div class="akg-shares">
-                    <div>
-                        <label>Aadi's share (€)</label>
-                        <input type="number" id="akg-aadi-share" step="0.01" min="0" value="0" required />
-                    </div>
-                    <div>
-                        <label>Krithika's share (€)</label>
-                        <input type="number" id="akg-krithika-share" step="0.01" min="0" value="0" required />
-                    </div>
-                    <div>
-                        <label>Common share (€)</label>
-                        <input type="number" id="akg-common-share" step="0.01" min="0" value="0" required />
-                    </div>
+                    <div><label>Aadi's share (€)</label><input type="number" id="akg-aadi-share" step="0.01" min="0" value="0" required /></div>
+                    <div><label>Krithika's share (€)</label><input type="number" id="akg-krithika-share" step="0.01" min="0" value="0" required /></div>
+                    <div><label>Common share (€)</label><input type="number" id="akg-common-share" step="0.01" min="0" value="0" required /></div>
                 </div>
                 <div class="akg-row akg-actions">
                     <button type="submit" class="akg-btn akg-btn-primary">Save Entry</button>
@@ -130,42 +59,16 @@
         </section>
 
         <section class="akg-filter-card">
-            <div class="akg-row">
-                <label>Filter by:</label>
-                <select id="akg-filter-month"></select>
-                <select id="akg-filter-year"></select>
-                <button id="akg-filter-btn" class="akg-btn">Filter</button>
-            </div>
+            <div class="akg-row"><label>Filter by:</label><select id="akg-filter-month"></select><select id="akg-filter-year"></select></div>
         </section>
 
         <section class="akg-table-card">
-            <h3>Entries</h3>
+            <h3>Entries <span class="loading-indicator" id="loading-indicator"></span></h3>
             <div class="akg-table-wrap">
                 <table id="akg-entries-table" class="akg-table">
-                    <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>Supermarket</th>
-                            <th>Paid By</th>
-                            <th>Total (€)</th>
-                            <th>Aadi (€)</th>
-                            <th>Krithika (€)</th>
-                            <th>Common (€)</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        </tbody>
-                    <tfoot>
-                        <tr class="akg-totals-row">
-                            <td colspan="3"><strong>Totals</strong></td>
-                            <td id="akg-total-grand">€0.00</td>
-                            <td id="akg-total-aadi">€0.00</td>
-                            <td id="akg-total-krithika">€0.00</td>
-                            <td id="akg-total-common">€0.00</td>
-                            <td></td>
-                        </tr>
-                    </tfoot>
+                    <thead><tr><th>Date</th><th>Supermarket</th><th>Paid By</th><th>Total (€)</th><th>Aadi (€)</th><th>Krithika (€)</th><th>Common (€)</th><th>Action</th></tr></thead>
+                    <tbody></tbody>
+                    <tfoot><tr class="akg-totals-row"><td colspan="3"><strong>Totals</strong></td><td id="akg-total-grand">€0.00</td><td id="akg-total-aadi">€0.00</td><td id="akg-total-krithika">€0.00</td><td id="akg-total-common">€0.00</td><td></td></tr></tfoot>
                 </table>
             </div>
         </section>
@@ -173,65 +76,56 @@
 
     <script>
     document.addEventListener('DOMContentLoaded', function() {
-
-        // --- DATA MANAGEMENT ---
-        let allEntries = JSON.parse(localStorage.getItem('akgExpenses')) || [];
-
-        function saveEntries() {
-            localStorage.setItem('akgExpenses', JSON.stringify(allEntries));
-        }
+        
+        // --- CONFIGURATION ---
+        // PASTE YOUR SHEETDB API URL HERE
+        const SHEETDB_API_URL = 'https://sheetdb.io/api/v1/wl7smcynmz1kz'; 
 
         // --- UI ELEMENTS ---
         const form = document.getElementById('akg-entry-form');
         const monthFilter = document.getElementById('akg-filter-month');
         const yearFilter = document.getElementById('akg-filter-year');
-        const filterBtn = document.getElementById('akg-filter-btn');
         const tableBody = document.querySelector('#akg-entries-table tbody');
         const msgDiv = document.getElementById('akg-form-msg');
+        const loadingIndicator = document.getElementById('loading-indicator');
 
         // --- UTILITY FUNCTIONS ---
-        function formatEuro(value) {
-            return '€' + parseFloat(value).toFixed(2);
-        }
-        
-        function showMsg(message, isError = false) {
+        const formatEuro = (value) => '€' + parseFloat(value).toFixed(2);
+        const showMsg = (message, isError = false) => {
             msgDiv.textContent = message;
             msgDiv.style.color = isError ? '#b00020' : '#0b7a4d';
             setTimeout(() => msgDiv.textContent = '', 4000);
-        }
+        };
 
-        // --- POPULATE FILTERS ---
-        function populateFilters() {
-            const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-            monthFilter.innerHTML = '<option value="0">All Months</option>';
-            months.forEach((month, index) => {
-                monthFilter.innerHTML += `<option value="${index + 1}">${month}</option>`;
-            });
+        // --- DATA FETCHING & RENDERING ---
+        async function fetchAndRenderEntries() {
+            loadingIndicator.textContent = '(Loading...)';
+            tableBody.innerHTML = '<tr><td colspan="8" style="text-align:center;">Fetching entries...</td></tr>';
+            
+            try {
+                const response = await fetch(`${SHEETDB_API_URL}?sort_by=date&sort_order=asc`);
+                if (!response.ok) throw new Error('Network response was not ok.');
+                const allEntries = await response.json();
 
-            const currentYear = new Date().getFullYear();
-            yearFilter.innerHTML = '';
-            for (let i = currentYear + 1; i >= currentYear - 5; i--) {
-                yearFilter.innerHTML += `<option value="${i}">${i}</option>`;
+                renderTable(allEntries);
+            } catch (error) {
+                console.error("Fetch error:", error);
+                tableBody.innerHTML = '<tr><td colspan="8" style="text-align:center;">Could not load data. Check API URL.</td></tr>';
+            } finally {
+                loadingIndicator.textContent = '';
             }
-            // Set default filter to current month and year
-            monthFilter.value = new Date().getMonth() + 1;
-            yearFilter.value = currentYear;
         }
 
-        // --- RENDER TABLE ---
-        function renderTable() {
+        function renderTable(entries) {
             const selectedMonth = parseInt(monthFilter.value);
             const selectedYear = parseInt(yearFilter.value);
 
-            const filteredEntries = allEntries.filter(entry => {
+            const filteredEntries = entries.filter(entry => {
                 const entryDate = new Date(entry.date);
                 const yearMatch = entryDate.getFullYear() === selectedYear;
                 const monthMatch = selectedMonth === 0 || (entryDate.getMonth() + 1) === selectedMonth;
                 return yearMatch && monthMatch;
             });
-            
-            // Sort entries by date
-            filteredEntries.sort((a, b) => new Date(a.date) - new Date(b.date));
 
             tableBody.innerHTML = '';
             let grandTotal = 0, aadiTotal = 0, krithikaTotal = 0, commonTotal = 0;
@@ -240,10 +134,10 @@
                 tableBody.innerHTML = '<tr><td colspan="8" style="text-align:center;">No entries for this period.</td></tr>';
             } else {
                 filteredEntries.forEach(entry => {
-                    grandTotal += entry.total;
-                    aadiTotal += entry.aadiShare;
-                    krithikaTotal += entry.krithikaShare;
-                    commonTotal += entry.commonShare;
+                    grandTotal += parseFloat(entry.total);
+                    aadiTotal += parseFloat(entry.aadiShare);
+                    krithikaTotal += parseFloat(entry.krithikaShare);
+                    commonTotal += parseFloat(entry.commonShare);
 
                     const row = document.createElement('tr');
                     row.innerHTML = `
@@ -260,7 +154,7 @@
                 });
             }
 
-            // Update totals in the footer
+            // Update totals
             document.getElementById('akg-total-grand').textContent = formatEuro(grandTotal);
             document.getElementById('akg-total-aadi').textContent = formatEuro(aadiTotal);
             document.getElementById('akg-total-krithika').textContent = formatEuro(krithikaTotal);
@@ -268,60 +162,95 @@
         }
 
         // --- EVENT HANDLERS ---
-        form.addEventListener('submit', function(e) {
+        form.addEventListener('submit', async function(e) {
             e.preventDefault();
-            const total = parseFloat(document.getElementById('akg-total').value) || 0;
-            const aadiShare = parseFloat(document.getElementById('akg-aadi-share').value) || 0;
-            const krithikaShare = parseFloat(document.getElementById('akg-krithika-share').value) || 0;
-            const commonShare = parseFloat(document.getElementById('akg-common-share').value) || 0;
+            const submitButton = form.querySelector('button[type="submit"]');
+            submitButton.disabled = true;
+            submitButton.textContent = 'Saving...';
 
-            if (Math.abs((aadiShare + krithikaShare + commonShare) - total) > 0.01) {
-                showMsg('Error: The shares do not add up to the total amount.', true);
-                return;
-            }
-            
             const newEntry = {
-                id: Date.now(), // Unique ID based on timestamp
+                id: Date.now(),
                 date: document.getElementById('akg-date').value,
                 supermarket: document.getElementById('akg-supermarket').value,
                 paidBy: document.getElementById('akg-paid-by').value,
-                total: total,
-                aadiShare: aadiShare,
-                krithikaShare: krithikaShare,
-                commonShare: commonShare,
+                total: document.getElementById('akg-total').value,
+                aadiShare: document.getElementById('akg-aadi-share').value,
+                krithikaShare: document.getElementById('akg-krithika-share').value,
+                commonShare: document.getElementById('akg-common-share').value,
             };
 
-            allEntries.push(newEntry);
-            saveEntries();
-            renderTable();
-            form.reset();
-            // Set date to today after reset
-            document.getElementById('akg-date').valueAsDate = new Date();
-            showMsg('Entry saved successfully!', false);
-        });
-        
-        filterBtn.addEventListener('click', renderTable);
-        
-        tableBody.addEventListener('click', function(e) {
-            if (e.target.classList.contains('akg-delete-btn')) {
-                if (confirm('Are you sure you want to delete this entry?')) {
-                    const entryId = parseInt(e.target.dataset.id);
-                    allEntries = allEntries.filter(entry => entry.id !== entryId);
-                    saveEntries();
-                    renderTable();
-                    showMsg('Entry deleted.', false);
-                }
+            try {
+                const response = await fetch(SHEETDB_API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ data: [newEntry] }),
+                });
+                if (!response.ok) throw new Error('Failed to save entry.');
+                
+                showMsg('Entry saved successfully!', false);
+                form.reset();
+                document.getElementById('akg-date').valueAsDate = new Date();
+                fetchAndRenderEntries(); // Refresh the table
+            } catch (error) {
+                showMsg('Error: Could not save entry.', true);
+                console.error(error);
+            } finally {
+                submitButton.disabled = false;
+                submitButton.textContent = 'Save Entry';
             }
         });
 
+        tableBody.addEventListener('click', async function(e) {
+            if (e.target.classList.contains('akg-delete-btn')) {
+                if (!confirm('Are you sure you want to delete this entry?')) return;
+
+                const entryId = e.target.dataset.id;
+                e.target.disabled = true;
+                e.target.textContent = '...';
+
+                try {
+                    const response = await fetch(`${SHEETDB_API_URL}/id/${entryId}`, {
+                        method: 'DELETE',
+                    });
+                    if (!response.ok) throw new Error('Failed to delete entry.');
+                    
+                    showMsg('Entry deleted.', false);
+                    fetchAndRenderEntries(); // Refresh the table
+                } catch (error) {
+                    showMsg('Error: Could not delete entry.', true);
+                    console.error(error);
+                    e.target.disabled = false;
+                    e.target.textContent = 'Delete';
+                }
+            }
+        });
+        
+        // Re-filter when the month or year changes
+        monthFilter.addEventListener('change', fetchAndRenderEntries);
+        yearFilter.addEventListener('change', fetchAndRenderEntries);
+
         // --- INITIALIZATION ---
         function init() {
-            populateFilters();
-            renderTable();
+            // Populate filter dropdowns
+            const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            monthFilter.innerHTML = '<option value="0">All Months</option>';
+            months.forEach((month, index) => monthFilter.innerHTML += `<option value="${index + 1}">${month}</option>`);
+            
+            const currentYear = new Date().getFullYear();
+            for (let i = currentYear + 1; i >= currentYear - 5; i--) yearFilter.innerHTML += `<option value="${i}">${i}</option>`;
+            
+            monthFilter.value = new Date().getMonth() + 1;
+            yearFilter.value = currentYear;
             document.getElementById('akg-date').valueAsDate = new Date();
+            
+            fetchAndRenderEntries();
         }
 
-        init();
+        if (SHEETDB_API_URL === 'https://sheetdb.io/api/v1/wl7smcynmz1kz') {
+            tableBody.innerHTML = '<tr><td colspan="8" style="text-align:center; color: red;">Error: Please paste your SheetDB API URL into the code.</td></tr>';
+        } else {
+            init();
+        }
     });
     </script>
 </body>
