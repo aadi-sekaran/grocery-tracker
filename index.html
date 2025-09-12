@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Aadi & Krithika - Grocery Tracker</title>
     <style>
-        /* CSS is identical to the previous version, so it is kept for styling */
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background-color: #f0f2f5; color: #333; margin: 0; padding: 20px; }
         .akg-wrap { max-width: 1100px; margin: 28px auto; background: #fff; border-radius: 12px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
         .akg-header h2 { margin: 0 0 6px 0; font-size: 1.8rem; color: #3d3d5c; text-align: center; }
@@ -77,6 +76,7 @@
     <script>
     document.addEventListener('DOMContentLoaded', function() {
         
+        // --- THIS LINE IS NOW CORRECT ---
         const SHEETDB_API_URL = 'https://sheetdb.io/api/v1/nzi4y82hdzs9v'; 
 
         const form = document.getElementById('akg-entry-form');
@@ -86,7 +86,7 @@
         const msgDiv = document.getElementById('akg-form-msg');
         const loadingIndicator = document.getElementById('loading-indicator');
 
-        const formatEuro = (value) => '€' + parseFloat(value).toFixed(2);
+        const formatEuro = (value) => '€' + parseFloat(value || 0).toFixed(2);
         const showMsg = (message, isError = false) => {
             msgDiv.textContent = message;
             msgDiv.style.color = isError ? '#b00020' : '#0b7a4d';
@@ -105,7 +105,7 @@
                 renderTable(allEntries);
             } catch (error) {
                 console.error("Fetch error:", error);
-                tableBody.innerHTML = '<tr><td colspan="8" style="text-align:center;">Could not load data. Check API URL.</td></tr>';
+                tableBody.innerHTML = '<tr><td colspan="8" style="text-align:center;">Could not load data. Check your API URL and Google Sheet permissions.</td></tr>';
             } finally {
                 loadingIndicator.textContent = '';
             }
@@ -116,7 +116,10 @@
             const selectedYear = parseInt(yearFilter.value);
 
             const filteredEntries = entries.filter(entry => {
+                if (!entry.date) return false; // Skip rows without a date
                 const entryDate = new Date(entry.date);
+                if (isNaN(entryDate.getTime())) return false; // Skip invalid dates
+                
                 const yearMatch = entryDate.getFullYear() === selectedYear;
                 const monthMatch = selectedMonth === 0 || (entryDate.getMonth() + 1) === selectedMonth;
                 return yearMatch && monthMatch;
@@ -129,16 +132,16 @@
                 tableBody.innerHTML = '<tr><td colspan="8" style="text-align:center;">No entries for this period.</td></tr>';
             } else {
                 filteredEntries.forEach(entry => {
-                    grandTotal += parseFloat(entry.total);
-                    aadiTotal += parseFloat(entry.aadiShare);
-                    krithikaTotal += parseFloat(entry.krithikaShare);
-                    commonTotal += parseFloat(entry.commonShare);
+                    grandTotal += parseFloat(entry.total || 0);
+                    aadiTotal += parseFloat(entry.aadiShare || 0);
+                    krithikaTotal += parseFloat(entry.krithikaShare || 0);
+                    commonTotal += parseFloat(entry.commonShare || 0);
 
                     const row = document.createElement('tr');
                     row.innerHTML = `
-                        <td>${entry.date}</td>
-                        <td>${entry.supermarket}</td>
-                        <td>${entry.paidBy}</td>
+                        <td>${entry.date || ''}</td>
+                        <td>${entry.supermarket || ''}</td>
+                        <td>${entry.paidBy || ''}</td>
                         <td>${formatEuro(entry.total)}</td>
                         <td>${formatEuro(entry.aadiShare)}</td>
                         <td>${formatEuro(entry.krithikaShare)}</td>
