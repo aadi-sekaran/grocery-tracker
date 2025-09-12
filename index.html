@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aadi & Krithika - Grocery Tracker</title>
+    <title>Night Fury & Light Fury - Grocery Tracker</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background-color: #f0f2f5; color: #333; margin: 0; padding: 20px; }
         .akg-wrap { max-width: 1100px; margin: 28px auto; background: #fff; border-radius: 12px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
-        .akg-header h2 { margin: 0 0 6px 0; font-size: 1.8rem; color: #3d3d5c; text-align: center; }
-        .akg-header p { color: #666; text-align: center; margin-bottom: 20px; }
-        .akg-form-card, .akg-filter-card, .akg-table-card { background: #fff; border: 1px solid #eef; border-radius: 10px; padding: 20px; margin: 16px 0; }
+        .akg-header h2 { margin: 0 0 20px 0; font-size: 1.8rem; color: #3d3d5c; text-align: center; }
+        .akg-form-card, .akg-filter-card, .akg-table-card, .akg-chart-card { background: #fff; border: 1px solid #eef; border-radius: 10px; padding: 20px; margin: 16px 0; }
         .akg-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
         .akg-row label { font-weight: 600; color: #444; min-width: 120px; }
         .akg-row input, .akg-row select { flex-grow: 1; padding: 9px 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 0.95rem; min-width: 180px; }
@@ -28,26 +28,38 @@
         .akg-table tbody tr:hover { background: #fafbff; }
         .akg-totals-row td { font-weight: 700; background: #f9f9fb; font-size: 1.05rem; }
         .akg-delete-btn { background: #ff4d6d; color: #fff; border: none; padding: 6px 10px; border-radius: 6px; cursor: pointer; font-size: 0.8rem; }
+        .akg-chart-container { position: relative; height: 300px; width: 100%; max-width: 600px; margin: 20px auto 0 auto; }
     </style>
 </head>
 <body>
 
     <div id="akg-wrap" class="akg-wrap">
         <header class="akg-header">
-            <h2>🛒 Aadi & Krithika — Grocery Tracker (€)</h2>
-            <p>Add grocery bills and track monthly totals. Data is saved online in a Google Sheet.</p>
+            <h2>🛒 Night Fury & Light Fury — Grocery Tracker (€)</h2>
         </header>
 
         <section class="akg-form-card">
             <h3>Add New Entry</h3>
             <form id="akg-entry-form">
                 <div class="akg-row"><label>Date</label><input type="date" id="akg-date" required /></div>
-                <div class="akg-row"><label>Supermarket</label><input type="text" id="akg-supermarket" placeholder="e.g. Lidl, Tesco, Aldi" required /></div>
-                <div class="akg-row"><label>Who paid</label><select id="akg-paid-by"><option value="Aadi">Aadi</option><option value="Krithika">Krithika</option></select></div>
+                <div class="akg-row"><label>Supermarket</label>
+                    <select id="akg-supermarket" required>
+                        <option value="Aldi">Aldi</option>
+                        <option value="Lidl">Lidl</option>
+                        <option value="Tesco">Tesco</option>
+                        <option value="Dunnes">Dunnes</option>
+                        <option value="SPAR">SPAR</option>
+                        <option value="SuperValu">SuperValu</option>
+                        <option value="Indian Store">Indian Store</option>
+                        <option value="Asian Store">Asian Store</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="akg-row"><label>Who paid</label><select id="akg-paid-by"><option value="Night Fury">Night Fury</option><option value="Light Fury">Light Fury</option></select></div>
                 <div class="akg-row"><label>Total amount (€)</label><input type="number" id="akg-total" step="0.01" min="0" placeholder="25.50" required /></div>
                 <div class="akg-shares">
-                    <div><label>Aadi's share (€)</label><input type="number" id="akg-aadi-share" step="0.01" min="0" value="0" required /></div>
-                    <div><label>Krithika's share (€)</label><input type="number" id="akg-krithika-share" step="0.01" min="0" value="0" required /></div>
+                    <div><label>Night Fury's share (€)</label><input type="number" id="akg-nightFury-share" step="0.01" min="0" value="0" required /></div>
+                    <div><label>Light Fury's share (€)</label><input type="number" id="akg-lightFury-share" step="0.01" min="0" value="0" required /></div>
                     <div><label>Common share (€)</label><input type="number" id="akg-common-share" step="0.01" min="0" value="0" required /></div>
                 </div>
                 <div class="akg-row akg-actions">
@@ -65,10 +77,17 @@
             <h3>Entries <span class="loading-indicator" id="loading-indicator"></span></h3>
             <div class="akg-table-wrap">
                 <table id="akg-entries-table" class="akg-table">
-                    <thead><tr><th>Date</th><th>Supermarket</th><th>Paid By</th><th>Total (€)</th><th>Aadi (€)</th><th>Krithika (€)</th><th>Common (€)</th><th>Action</th></tr></thead>
+                    <thead><tr><th>Date</th><th>Supermarket</th><th>Paid By</th><th>Total (€)</th><th>Night Fury (€)</th><th>Light Fury (€)</th><th>Common (€)</th><th>Action</th></tr></thead>
                     <tbody></tbody>
-                    <tfoot><tr class="akg-totals-row"><td colspan="3"><strong>Totals</strong></td><td id="akg-total-grand">€0.00</td><td id="akg-total-aadi">€0.00</td><td id="akg-total-krithika">€0.00</td><td id="akg-total-common">€0.00</td><td></td></tr></tfoot>
+                    <tfoot><tr class="akg-totals-row"><td colspan="3"><strong>Totals (Personal + 1/2 Common)</strong></td><td id="akg-total-grand">€0.00</td><td id="akg-total-nightFury">€0.00</td><td id="akg-total-lightFury">€0.00</td><td id="akg-total-common">€0.00</td><td></td></tr></tfoot>
                 </table>
+            </div>
+        </section>
+
+        <section class="akg-chart-card">
+            <h3>Monthly Totals Graph</h3>
+            <div class="akg-chart-container">
+                <canvas id="monthlyTotalsChart"></canvas>
             </div>
         </section>
     </div>
@@ -76,8 +95,8 @@
     <script>
     document.addEventListener('DOMContentLoaded', function() {
         
-        // --- THIS LINE IS NOW CORRECT ---
         const SHEETDB_API_URL = 'https://sheetdb.io/api/v1/nzi4y82hdzs9v'; 
+        let monthlyChart; // Variable to hold the chart instance
 
         const form = document.getElementById('akg-entry-form');
         const monthFilter = document.getElementById('akg-filter-month');
@@ -101,11 +120,10 @@
                 const response = await fetch(`${SHEETDB_API_URL}?sort_by=date&sort_order=asc`);
                 if (!response.ok) throw new Error('Network response was not ok.');
                 const allEntries = await response.json();
-
                 renderTable(allEntries);
             } catch (error) {
                 console.error("Fetch error:", error);
-                tableBody.innerHTML = '<tr><td colspan="8" style="text-align:center;">Could not load data. Check your API URL and Google Sheet permissions.</td></tr>';
+                tableBody.innerHTML = '<tr><td colspan="8" style="text-align:center;">Could not load data. Check API URL and Google Sheet permissions.</td></tr>';
             } finally {
                 loadingIndicator.textContent = '';
             }
@@ -116,9 +134,9 @@
             const selectedYear = parseInt(yearFilter.value);
 
             const filteredEntries = entries.filter(entry => {
-                if (!entry.date) return false; // Skip rows without a date
+                if (!entry.date) return false;
                 const entryDate = new Date(entry.date);
-                if (isNaN(entryDate.getTime())) return false; // Skip invalid dates
+                if (isNaN(entryDate.getTime())) return false;
                 
                 const yearMatch = entryDate.getFullYear() === selectedYear;
                 const monthMatch = selectedMonth === 0 || (entryDate.getMonth() + 1) === selectedMonth;
@@ -126,15 +144,15 @@
             });
 
             tableBody.innerHTML = '';
-            let grandTotal = 0, aadiTotal = 0, krithikaTotal = 0, commonTotal = 0;
+            let grandTotal = 0, nightFuryTotal = 0, lightFuryTotal = 0, commonTotal = 0;
 
             if (filteredEntries.length === 0) {
                 tableBody.innerHTML = '<tr><td colspan="8" style="text-align:center;">No entries for this period.</td></tr>';
             } else {
                 filteredEntries.forEach(entry => {
                     grandTotal += parseFloat(entry.total || 0);
-                    aadiTotal += parseFloat(entry.aadiShare || 0);
-                    krithikaTotal += parseFloat(entry.krithikaShare || 0);
+                    nightFuryTotal += parseFloat(entry.nightFuryShare || 0);
+                    lightFuryTotal += parseFloat(entry.lightFuryShare || 0);
                     commonTotal += parseFloat(entry.commonShare || 0);
 
                     const row = document.createElement('tr');
@@ -143,23 +161,95 @@
                         <td>${entry.supermarket || ''}</td>
                         <td>${entry.paidBy || ''}</td>
                         <td>${formatEuro(entry.total)}</td>
-                        <td>${formatEuro(entry.aadiShare)}</td>
-                        <td>${formatEuro(entry.krithikaShare)}</td>
+                        <td>${formatEuro(entry.nightFuryShare)}</td>
+                        <td>${formatEuro(entry.lightFuryShare)}</td>
                         <td>${formatEuro(entry.commonShare)}</td>
                         <td><button class="akg-delete-btn" data-id="${entry.id}">Delete</button></td>
                     `;
                     tableBody.appendChild(row);
                 });
             }
+            
+            // NEW: Calculate final totals including half of common share
+            const nightFuryFinalTotal = nightFuryTotal + (commonTotal / 2);
+            const lightFuryFinalTotal = lightFuryTotal + (commonTotal / 2);
 
+            // Update footer totals
             document.getElementById('akg-total-grand').textContent = formatEuro(grandTotal);
-            document.getElementById('akg-total-aadi').textContent = formatEuro(aadiTotal);
-            document.getElementById('akg-total-krithika').textContent = formatEuro(krithikaTotal);
+            document.getElementById('akg-total-nightFury').textContent = formatEuro(nightFuryFinalTotal);
+            document.getElementById('akg-total-lightFury').textContent = formatEuro(lightFuryFinalTotal);
             document.getElementById('akg-total-common').textContent = formatEuro(commonTotal);
+
+            // NEW: Update the bar chart
+            updateChart(nightFuryFinalTotal, lightFuryFinalTotal);
         }
+
+        function updateChart(nightFuryData, lightFuryData) {
+            const ctx = document.getElementById('monthlyTotalsChart').getContext('2d');
+            
+            if (monthlyChart) {
+                monthlyChart.destroy(); // Destroy old chart before creating a new one
+            }
+
+            monthlyChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Night Fury', 'Light Fury'],
+                    datasets: [{
+                        label: 'Total Monthly Spend',
+                        data: [nightFuryData, lightFuryData],
+                        backgroundColor: [
+                            'rgba(54, 162, 235, 0.6)', // Blue
+                            'rgba(255, 206, 86, 0.6)'  // Yellow
+                        ],
+                        borderColor: [
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 206, 86, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value, index, values) {
+                                    return '€' + value;
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: 'Final Monthly Totals (including common share)'
+                        }
+                    }
+                }
+            });
+        }
+
 
         form.addEventListener('submit', async function(e) {
             e.preventDefault();
+
+            // NEW: Validation for shares
+            const total = parseFloat(document.getElementById('akg-total').value) || 0;
+            const nightFuryShare = parseFloat(document.getElementById('akg-nightFury-share').value) || 0;
+            const lightFuryShare = parseFloat(document.getElementById('akg-lightFury-share').value) || 0;
+            const commonShare = parseFloat(document.getElementById('akg-common-share').value) || 0;
+            
+            if (Math.abs((nightFuryShare + lightFuryShare + commonShare) - total) > 0.01) {
+                showMsg('Error: The shares do not add up to the total amount. Please check the numbers.', true);
+                return; // Stop the submission
+            }
+
             const submitButton = form.querySelector('button[type="submit"]');
             submitButton.disabled = true;
             submitButton.textContent = 'Saving...';
@@ -169,10 +259,10 @@
                 date: document.getElementById('akg-date').value,
                 supermarket: document.getElementById('akg-supermarket').value,
                 paidBy: document.getElementById('akg-paid-by').value,
-                total: document.getElementById('akg-total').value,
-                aadiShare: document.getElementById('akg-aadi-share').value,
-                krithikaShare: document.getElementById('akg-krithika-share').value,
-                commonShare: document.getElementById('akg-common-share').value,
+                total: total,
+                nightFuryShare: nightFuryShare,
+                lightFuryShare: lightFuryShare,
+                commonShare: commonShare,
             };
 
             try {
@@ -205,9 +295,7 @@
                 e.target.textContent = '...';
 
                 try {
-                    const response = await fetch(`${SHEETDB_API_URL}/id/${entryId}`, {
-                        method: 'DELETE',
-                    });
+                    const response = await fetch(`${SHEETDB_API_URL}/id/${entryId}`, { method: 'DELETE' });
                     if (!response.ok) throw new Error('Failed to delete entry.');
                     
                     showMsg('Entry deleted.', false);
