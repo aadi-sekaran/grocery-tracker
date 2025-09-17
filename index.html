@@ -96,7 +96,7 @@
     document.addEventListener('DOMContentLoaded', function() {
         
         const SHEETDB_API_URL = 'https://sheetdb.io/api/v1/nzi4y82hdzs9v'; 
-        let monthlyChart; // Variable to hold the chart instance
+        let monthlyChart;
 
         const form = document.getElementById('akg-entry-form');
         const monthFilter = document.getElementById('akg-filter-month');
@@ -104,6 +104,16 @@
         const tableBody = document.querySelector('#akg-entries-table tbody');
         const msgDiv = document.getElementById('akg-form-msg');
         const loadingIndicator = document.getElementById('loading-indicator');
+
+        // --- SAFARI FIX: HELPER FUNCTION TO PARSE DATES RELIABLY ---
+        function parseDateString(dateStr) {
+            if (!dateStr || typeof dateStr !== 'string') return null;
+            // Split the 'YYYY-MM-DD' string to avoid timezone issues
+            const parts = dateStr.split('-');
+            if (parts.length !== 3) return null;
+            // new Date(year, monthIndex, day) is the most reliable format
+            return new Date(parts[0], parts[1] - 1, parts[2]);
+        }
 
         const formatEuro = (value) => '€' + parseFloat(value || 0).toFixed(2);
         const showMsg = (message, isError = false) => {
@@ -134,9 +144,9 @@
             const selectedYear = parseInt(yearFilter.value);
 
             const filteredEntries = entries.filter(entry => {
-                if (!entry.date) return false;
-                const entryDate = new Date(entry.date);
-                if (isNaN(entryDate.getTime())) return false;
+                // --- SAFARI FIX: Use the new helper function here ---
+                const entryDate = parseDateString(entry.date);
+                if (!entryDate) return false;
                 
                 const yearMatch = entryDate.getFullYear() === selectedYear;
                 const monthMatch = selectedMonth === 0 || (entryDate.getMonth() + 1) === selectedMonth;
@@ -170,17 +180,14 @@
                 });
             }
             
-            // NEW: Calculate final totals including half of common share
             const nightFuryFinalTotal = nightFuryTotal + (commonTotal / 2);
             const lightFuryFinalTotal = lightFuryTotal + (commonTotal / 2);
 
-            // Update footer totals
             document.getElementById('akg-total-grand').textContent = formatEuro(grandTotal);
             document.getElementById('akg-total-nightFury').textContent = formatEuro(nightFuryFinalTotal);
             document.getElementById('akg-total-lightFury').textContent = formatEuro(lightFuryFinalTotal);
             document.getElementById('akg-total-common').textContent = formatEuro(commonTotal);
 
-            // NEW: Update the bar chart
             updateChart(nightFuryFinalTotal, lightFuryFinalTotal);
         }
 
@@ -188,7 +195,7 @@
             const ctx = document.getElementById('monthlyTotalsChart').getContext('2d');
             
             if (monthlyChart) {
-                monthlyChart.destroy(); // Destroy old chart before creating a new one
+                monthlyChart.destroy();
             }
 
             monthlyChart = new Chart(ctx, {
@@ -198,48 +205,26 @@
                     datasets: [{
                         label: 'Total Monthly Spend',
                         data: [nightFuryData, lightFuryData],
-                        backgroundColor: [
-                            'rgba(54, 162, 235, 0.6)', // Blue
-                            'rgba(255, 206, 86, 0.6)'  // Yellow
-                        ],
-                        borderColor: [
-                            'rgba(54, 162, 235, 1)',
-                            'rgba(255, 206, 86, 1)'
-                        ],
+                        backgroundColor: [ 'rgba(54, 162, 235, 0.6)', 'rgba(255, 206, 86, 0.6)' ],
+                        borderColor: [ 'rgba(54, 162, 235, 1)', 'rgba(255, 206, 86, 1)' ],
                         borderWidth: 1
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                callback: function(value, index, values) {
-                                    return '€' + value;
-                                }
-                            }
-                        }
-                    },
+                    scales: { y: { beginAtZero: true, ticks: { callback: (value) => '€' + value } } },
                     plugins: {
-                        legend: {
-                            display: false
-                        },
-                        title: {
-                            display: true,
-                            text: 'Final Monthly Totals (including common share)'
-                        }
+                        legend: { display: false },
+                        title: { display: true, text: 'Final Monthly Totals (including common share)' }
                     }
                 }
             });
         }
 
-
         form.addEventListener('submit', async function(e) {
             e.preventDefault();
 
-            // NEW: Validation for shares
             const total = parseFloat(document.getElementById('akg-total').value) || 0;
             const nightFuryShare = parseFloat(document.getElementById('akg-nightFury-share').value) || 0;
             const lightFuryShare = parseFloat(document.getElementById('akg-lightFury-share').value) || 0;
@@ -247,7 +232,7 @@
             
             if (Math.abs((nightFuryShare + lightFuryShare + commonShare) - total) > 0.01) {
                 showMsg('Error: The shares do not add up to the total amount. Please check the numbers.', true);
-                return; // Stop the submission
+                return;
             }
 
             const submitButton = form.querySelector('button[type="submit"]');
