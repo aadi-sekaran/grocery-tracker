@@ -105,14 +105,22 @@
         const msgDiv = document.getElementById('akg-form-msg');
         const loadingIndicator = document.getElementById('loading-indicator');
 
-        // --- SAFARI FIX: HELPER FUNCTION TO PARSE DATES RELIABLY ---
+        // This function will now be used to find hidden errors
         function parseDateString(dateStr) {
-            if (!dateStr || typeof dateStr !== 'string') return null;
-            // Split the 'YYYY-MM-DD' string to avoid timezone issues
-            const parts = dateStr.split('-');
-            if (parts.length !== 3) return null;
-            // new Date(year, monthIndex, day) is the most reliable format
-            return new Date(parts[0], parts[1] - 1, parts[2]);
+            try {
+                if (!dateStr || typeof dateStr !== 'string') return null;
+                const parts = dateStr.split('-');
+                if (parts.length !== 3) return null;
+                const year = parseInt(parts[0], 10);
+                const month = parseInt(parts[1], 10) - 1; // Month is 0-indexed
+                const day = parseInt(parts[2], 10);
+                if (isNaN(year) || isNaN(month) || isNaN(day)) return null;
+                return new Date(year, month, day);
+            } catch (e) {
+                // *** DEBUGGING: This will show an alert if date parsing fails ***
+                alert('Error parsing date: ' + dateStr + '\nError: ' + e.message);
+                return null;
+            }
         }
 
         const formatEuro = (value) => '€' + parseFloat(value || 0).toFixed(2);
@@ -132,63 +140,68 @@
                 const allEntries = await response.json();
                 renderTable(allEntries);
             } catch (error) {
-                console.error("Fetch error:", error);
-                tableBody.innerHTML = '<tr><td colspan="8" style="text-align:center;">Could not load data. Check API URL and Google Sheet permissions.</td></tr>';
+                 // *** DEBUGGING: This will show an alert if fetching data fails ***
+                alert('Error fetching data from the API.\nError: ' + error.message);
+                tableBody.innerHTML = '<tr><td colspan="8" style="text-align:center;">Could not load data.</td></tr>';
             } finally {
                 loadingIndicator.textContent = '';
             }
         }
 
         function renderTable(entries) {
-            const selectedMonth = parseInt(monthFilter.value);
-            const selectedYear = parseInt(yearFilter.value);
+            try { // *** DEBUGGING: Added a try...catch block here to find rendering errors ***
+                const selectedMonth = parseInt(monthFilter.value);
+                const selectedYear = parseInt(yearFilter.value);
 
-            const filteredEntries = entries.filter(entry => {
-                // --- SAFARI FIX: Use the new helper function here ---
-                const entryDate = parseDateString(entry.date);
-                if (!entryDate) return false;
-                
-                const yearMatch = entryDate.getFullYear() === selectedYear;
-                const monthMatch = selectedMonth === 0 || (entryDate.getMonth() + 1) === selectedMonth;
-                return yearMatch && monthMatch;
-            });
-
-            tableBody.innerHTML = '';
-            let grandTotal = 0, nightFuryTotal = 0, lightFuryTotal = 0, commonTotal = 0;
-
-            if (filteredEntries.length === 0) {
-                tableBody.innerHTML = '<tr><td colspan="8" style="text-align:center;">No entries for this period.</td></tr>';
-            } else {
-                filteredEntries.forEach(entry => {
-                    grandTotal += parseFloat(entry.total || 0);
-                    nightFuryTotal += parseFloat(entry.nightFuryShare || 0);
-                    lightFuryTotal += parseFloat(entry.lightFuryShare || 0);
-                    commonTotal += parseFloat(entry.commonShare || 0);
-
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${entry.date || ''}</td>
-                        <td>${entry.supermarket || ''}</td>
-                        <td>${entry.paidBy || ''}</td>
-                        <td>${formatEuro(entry.total)}</td>
-                        <td>${formatEuro(entry.nightFuryShare)}</td>
-                        <td>${formatEuro(entry.lightFuryShare)}</td>
-                        <td>${formatEuro(entry.commonShare)}</td>
-                        <td><button class="akg-delete-btn" data-id="${entry.id}">Delete</button></td>
-                    `;
-                    tableBody.appendChild(row);
+                const filteredEntries = entries.filter(entry => {
+                    const entryDate = parseDateString(entry.date);
+                    if (!entryDate) return false;
+                    
+                    const yearMatch = entryDate.getFullYear() === selectedYear;
+                    const monthMatch = selectedMonth === 0 || (entryDate.getMonth() + 1) === selectedMonth;
+                    return yearMatch && monthMatch;
                 });
+
+                tableBody.innerHTML = '';
+                let grandTotal = 0, nightFuryTotal = 0, lightFuryTotal = 0, commonTotal = 0;
+
+                if (filteredEntries.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="8" style="text-align:center;">No entries for this period.</td></tr>';
+                } else {
+                    filteredEntries.forEach(entry => {
+                        grandTotal += parseFloat(entry.total || 0);
+                        nightFuryTotal += parseFloat(entry.nightFuryShare || 0);
+                        lightFuryTotal += parseFloat(entry.lightFuryShare || 0);
+                        commonTotal += parseFloat(entry.commonShare || 0);
+
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${entry.date || ''}</td>
+                            <td>${entry.supermarket || ''}</td>
+                            <td>${entry.paidBy || ''}</td>
+                            <td>${formatEuro(entry.total)}</td>
+                            <td>${formatEuro(entry.nightFuryShare)}</td>
+                            <td>${formatEuro(entry.lightFuryShare)}</td>
+                            <td>${formatEuro(entry.commonShare)}</td>
+                            <td><button class="akg-delete-btn" data-id="${entry.id}">Delete</button></td>
+                        `;
+                        tableBody.appendChild(row);
+                    });
+                }
+                
+                const nightFuryFinalTotal = nightFuryTotal + (commonTotal / 2);
+                const lightFuryFinalTotal = lightFuryTotal + (commonTotal / 2);
+
+                document.getElementById('akg-total-grand').textContent = formatEuro(grandTotal);
+                document.getElementById('akg-total-nightFury').textContent = formatEuro(nightFuryFinalTotal);
+                document.getElementById('akg-total-lightFury').textContent = formatEuro(lightFuryFinalTotal);
+                document.getElementById('akg-total-common').textContent = formatEuro(commonTotal);
+
+                updateChart(nightFuryFinalTotal, lightFuryFinalTotal);
+            } catch(e) {
+                 // *** DEBUGGING: This will show an alert if filtering or rendering the table fails ***
+                 alert('An error occurred while displaying the data.\nError: ' + e.message);
             }
-            
-            const nightFuryFinalTotal = nightFuryTotal + (commonTotal / 2);
-            const lightFuryFinalTotal = lightFuryTotal + (commonTotal / 2);
-
-            document.getElementById('akg-total-grand').textContent = formatEuro(grandTotal);
-            document.getElementById('akg-total-nightFury').textContent = formatEuro(nightFuryFinalTotal);
-            document.getElementById('akg-total-lightFury').textContent = formatEuro(lightFuryFinalTotal);
-            document.getElementById('akg-total-common').textContent = formatEuro(commonTotal);
-
-            updateChart(nightFuryFinalTotal, lightFuryFinalTotal);
         }
 
         function updateChart(nightFuryData, lightFuryData) {
